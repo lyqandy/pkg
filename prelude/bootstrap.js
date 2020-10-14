@@ -133,6 +133,15 @@ function createMountpoint (interior, exterior) {
   mountpoints.push({ interior: interior, exterior: exterior });
 }
 
+function makeLong (f) {
+  return require('path')._makeLong(f);
+}
+
+function revertMakingLong (f) {
+  if (/^\\\\\?\\/.test(f)) return f.slice(4);
+  return f;
+}
+
 /*
 
 // TODO move to some test
@@ -1142,15 +1151,6 @@ function payloadFileSync (pointer) {
   // INTERNAL //////////////////////////////////////////////////////
   // ///////////////////////////////////////////////////////////////
 
-  function makeLong (f) {
-    return require('path')._makeLong(f);
-  }
-
-  function revertMakingLong (f) {
-    if (/^\\\\\?\\/.test(f)) return f.slice(4);
-    return f;
-  }
-
   function findNativeAddonForInternalModuleStat (path_) {
     var path = findNativeAddonSyncUnderRequire(path_);
     if (!path) return -ENOENT;
@@ -1587,7 +1587,7 @@ function payloadFileSync (pointer) {
 
   process.dlopen = function () {
     const args = cloneArgs(arguments);
-    const modulePath = args[1];
+    const modulePath = revertMakingLong(args[1]);
     const moduleDirname = require('path').dirname(modulePath);
     if (insideSnapshot(modulePath)) {
       // Node addon files and .so cannot be read with fs directly, they are loaded with process.dlopen which needs a filesystem path
